@@ -4,11 +4,14 @@ import backtrader as bt
 class TestStrategy(bt.Strategy):
 	params=(
 		("maperiod",15),
+		("printlog",False),
 	)
-	def log(self,txt,dt=None):
+
+	def log(self,txt,dt=None,doprint=False):
 		#logging function
-		dt=dt or self.datas[0].datetime.date(0)
-		print(f"{dt.isoformat()} > {txt}")
+		if self.params.printlog or doprint:
+			dt=dt or self.datas[0].datetime.date(0)
+			print(f"{dt.isoformat()} > {txt}")
 
 	def __init__(self):
 		#Keep a reference to the close line in the data[0] dataseries
@@ -21,6 +24,15 @@ class TestStrategy(bt.Strategy):
 
 		# Add SMA
 		self.sma = bt.indicators.SMA(self.datas[0],period=self.params.maperiod)
+
+		#Add indicators for the plotting show
+		bt.indicators.ExponentialMovingAverage(self.datas[0],period=25)
+		bt.indicators.WeightedMovingAverage(self.datas[0],period=25,subplot=True)
+		bt.indicators.Stochastic(self.datas[0])
+		bt.indicators.MACDHisto(self.datas[0])
+		rsi=bt.indicators.RSI(self.datas[0])
+		bt.indicators.SmoothedMovingAverage(rsi,period=10)
+		bt.indicators.ATR(self.datas[0],plot=False)
 
 	def notify_order(self, order):
 		if order.status in [order.Submitted, order.Accepted]:
@@ -66,3 +78,5 @@ class TestStrategy(bt.Strategy):
 				# SELL !
 				self.log(f"SELL CREATE:{self.dataclose[0]}")
 				self.order=self.sell()
+	def stop(self):
+		self.log(f"(MA Period {self.params.maperiod}) Ending Value {self.broker.getvalue()}", doprint=True)

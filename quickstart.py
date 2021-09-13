@@ -1,5 +1,5 @@
 from __future__ import (absolute_import, division, print_function, unicode_literals)
-
+from matplotlib import dates
 import datetime
 import os.path
 import sys
@@ -11,7 +11,8 @@ if __name__ == '__main__':
 	cerebro = bt.Cerebro() #create cerebro entity
 
 	#add strategy
-	cerebro.addstrategy(strat.TestStrategy)
+	#cerebro.addstrategy(strat.TestStrategy)
+	strats=cerebro.optstrategy(strat.TestStrategy,maperiod=range(10,31))
 
 	#find the data file
 	modpath = os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -31,8 +32,10 @@ if __name__ == '__main__':
 	cerebro.addsizer(bt.sizers.FixedSize, stake=10)
 	cerebro.broker.setcommission(commission=0.001)#0.1%
 
-	print(f"Starting Portfolio value:{cerebro.broker.getvalue()}")
+	#print(f"Starting Portfolio value:{cerebro.broker.getvalue()}")
 
-	cerebro.run()
+	cerebro.run(maxcpus=1)
 
-	print(f"Final Portfolio value:{cerebro.broker.getvalue()}")
+	#print(f"Final Portfolio value:{cerebro.broker.getvalue()}")
+
+	#cerebro.plot()
